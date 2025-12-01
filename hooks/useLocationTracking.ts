@@ -38,6 +38,7 @@ export function useLocationTracking() {
   const pauseTimeRef = useRef<number>(0);
   const totalPausedRef = useRef<number>(0);
   const timerRef = useRef<NodeJS.Timeout | null>(null);
+  const isPausedRef = useRef<boolean>(false);
 
   useEffect(() => {
     checkPermissions();
@@ -138,6 +139,7 @@ export function useLocationTracking() {
       setSpeed(location.coords.speed || 0);
       startTimeRef.current = Date.now();
       totalPausedRef.current = 0;
+      isPausedRef.current = false;
       setIsTracking(true);
       setIsPaused(false);
 
@@ -148,7 +150,7 @@ export function useLocationTracking() {
           distanceInterval: 5,
         },
         (newLocation) => {
-          if (isPaused) return;
+          if (isPausedRef.current) return;
 
           const newPoint: LocationPoint = {
             latitude: newLocation.coords.latitude,
@@ -183,6 +185,7 @@ export function useLocationTracking() {
   const pauseTracking = () => {
     if (!isTracking || isPaused) return;
     pauseTimeRef.current = Date.now();
+    isPausedRef.current = true;
     setIsPaused(true);
   };
 
@@ -190,6 +193,7 @@ export function useLocationTracking() {
     if (!isTracking || !isPaused) return;
     const pauseDuration = Date.now() - pauseTimeRef.current;
     totalPausedRef.current += pauseDuration;
+    isPausedRef.current = false;
     setIsPaused(false);
   };
 
