@@ -6,9 +6,12 @@ import {
   useColorScheme,
   ScrollView,
   Dimensions,
+  TouchableOpacity,
+  Share,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
+import { Ionicons } from '@expo/vector-icons';
 import { useRewards } from '@/hooks/useRewards';
 import { AchievementBadge } from '@/components/AchievementBadge';
 import { colors, typography, spacing, borderRadius } from '@/constants/theme';
@@ -41,6 +44,24 @@ export default function RewardsScreen() {
   const streakAchievements = achievements.filter((a) => a.type === 'streak');
   const goalAchievements = achievements.filter((a) => a.type === 'goal');
 
+  const handleShareAchievements = async () => {
+    try {
+      const unlockedAchievements = achievements.filter((a) => a.unlocked);
+      const achievementsList = unlockedAchievements
+        .map((a) => `${a.icon} ${a.title}`)
+        .join('\n');
+      
+      const message = `🏆 My StepTracker Achievements\n\n📊 Progress: ${unlockedCount}/${totalCount} unlocked (${completionPercentage}%)\n🔥 Current Streak: ${currentStreak} days\n\n${achievementsList}\n\nJoin me on StepTracker and unlock your fitness achievements!`;
+      
+      await Share.share({
+        message,
+        title: 'My StepTracker Achievements',
+      });
+    } catch (error) {
+      console.log('Error sharing:', error);
+    }
+  };
+
   return (
     <View style={[styles.container, { backgroundColor: theme.background }]}>
       <ScrollView
@@ -52,12 +73,22 @@ export default function RewardsScreen() {
         showsVerticalScrollIndicator={false}
       >
         <View style={styles.header}>
-          <Text style={[styles.title, { color: theme.text.primary }]}>
-            Achievements
-          </Text>
-          <Text style={[styles.subtitle, { color: theme.text.secondary }]}>
-            {unlockedCount} of {totalCount} unlocked
-          </Text>
+          <View>
+            <Text style={[styles.title, { color: theme.text.primary }]}>
+              Achievements
+            </Text>
+            <Text style={[styles.subtitle, { color: theme.text.secondary }]}>
+              {unlockedCount} of {totalCount} unlocked
+            </Text>
+          </View>
+          {unlockedCount > 0 && (
+            <TouchableOpacity
+              style={[styles.shareIconButton, { backgroundColor: theme.card, borderColor: theme.border }]}
+              onPress={handleShareAchievements}
+            >
+              <Ionicons name="share-social" size={24} color={theme.primary} />
+            </TouchableOpacity>
+          )}
         </View>
 
         <LinearGradient
@@ -148,6 +179,17 @@ const styles = StyleSheet.create({
   },
   header: {
     marginBottom: spacing.lg,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  shareIconButton: {
+    width: 48,
+    height: 48,
+    borderRadius: borderRadius.md,
+    borderWidth: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   title: {
     fontSize: typography.sizes.xl,

@@ -9,6 +9,7 @@ import {
   Dimensions,
   TouchableOpacity,
   Modal,
+  Share,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -77,6 +78,20 @@ export default function HomeScreen() {
   const handleCloseModal = () => {
     setShowUnlockModal(false);
     clearNewUnlocks();
+  };
+
+  const handleShareProgress = async () => {
+    try {
+      const goalPercent = Math.round((steps / dailyGoal) * 100);
+      const message = `🎯 My StepTracker Progress Today\n\n👟 Steps: ${steps.toLocaleString()} / ${dailyGoal.toLocaleString()} (${goalPercent}%)\n🔥 Calories: ${calories} kcal\n📍 Distance: ${distance} km\n\n${progress >= 1 ? '✅ Goal achieved! 🎉' : ''}\n\nTrack your fitness journey with StepTracker!`;
+      
+      await Share.share({
+        message,
+        title: 'My StepTracker Progress',
+      });
+    } catch (error) {
+      console.log('Error sharing:', error);
+    }
   };
 
   const progress = steps / dailyGoal;
@@ -186,6 +201,16 @@ export default function HomeScreen() {
                 day
               </Text>
             </View>
+
+            <TouchableOpacity
+              style={[styles.shareButton, { backgroundColor: theme.card, borderColor: theme.border }]}
+              onPress={handleShareProgress}
+            >
+              <Ionicons name="share-social" size={24} color={theme.primary} />
+              <Text style={[styles.shareButtonText, { color: theme.text.primary }]}>
+                Share My Progress
+              </Text>
+            </TouchableOpacity>
 
             {recentAchievements.length > 0 && (
               <View style={styles.recentAchievements}>
@@ -344,6 +369,20 @@ const styles = StyleSheet.create({
     fontSize: typography.sizes.sm,
     fontWeight: typography.weights.medium,
     lineHeight: typography.sizes.sm * 1.5,
+  },
+  shareButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: spacing.md,
+    borderRadius: borderRadius.lg,
+    borderWidth: 1,
+    marginTop: spacing.lg,
+  },
+  shareButtonText: {
+    fontSize: typography.sizes.md,
+    fontWeight: typography.weights.bold,
+    marginLeft: spacing.sm,
   },
   recentAchievements: {
     marginTop: spacing.lg,

@@ -8,6 +8,7 @@ import {
   TouchableOpacity,
   Linking,
   Platform,
+  Share,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -35,6 +36,21 @@ export default function AboutScreen() {
     Linking.openURL('mailto:cleekdamian6@gmail.com?subject=StepTracker Feedback').catch(() => {
       console.log('Could not open email');
     });
+  };
+
+  const handleShareApp = async () => {
+    try {
+      await Share.share({
+        message: Platform.select({
+          ios: '👟 Check out StepTracker - Your fitness journey companion! Track your steps, unlock achievements, and reach your fitness goals. Download now!',
+          android: '👟 Check out StepTracker - Your fitness journey companion! Track your steps, unlock achievements, and reach your fitness goals. Download now!\n\nhttps://onspace.ai',
+          default: '👟 Check out StepTracker - Your fitness journey companion!',
+        }),
+        title: 'StepTracker - Fitness App',
+      });
+    } catch (error) {
+      console.log('Error sharing:', error);
+    }
   };
 
 
@@ -112,10 +128,20 @@ export default function AboutScreen() {
         <View style={styles.actionButtons}>
           <TouchableOpacity
             style={[styles.actionButton, { backgroundColor: theme.primary }]}
+            onPress={handleShareApp}
+          >
+            <Ionicons name="share-social" size={24} color="#FFFFFF" />
+            <Text style={styles.actionButtonText}>Share This App</Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            style={[styles.actionButton, { backgroundColor: theme.card }]}
             onPress={handleRateApp}
           >
-            <Ionicons name="star" size={24} color="#FFFFFF" />
-            <Text style={styles.actionButtonText}>Rate This App</Text>
+            <Ionicons name="star" size={24} color={theme.text.primary} />
+            <Text style={[styles.actionButtonText, { color: theme.text.primary }]}>
+              Rate This App
+            </Text>
           </TouchableOpacity>
 
           <TouchableOpacity
