@@ -8,14 +8,18 @@ import {
   Platform,
   Dimensions,
   TouchableOpacity,
+  Modal,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
 import { usePedometer } from '@/hooks/usePedometer';
 import { useStepStorage } from '@/hooks/useStepStorage';
+import { useRewards } from '@/hooks/useRewards';
 import { CircularProgress } from '@/components/CircularProgress';
 import { StatCard } from '@/components/StatCard';
+import { AchievementBadge } from '@/components/AchievementBadge';
 import { colors, typography, spacing, borderRadius } from '@/constants/theme';
+import { Ionicons } from '@expo/vector-icons';
 
 export default function HomeScreen() {
   const colorScheme = useColorScheme();
@@ -23,7 +27,15 @@ export default function HomeScreen() {
   const insets = useSafeAreaInsets();
   const { steps, isAvailable, error } = usePedometer();
   const { dailyGoal, saveSteps } = useStepStorage();
+  const { 
+    achievements, 
+    newlyUnlocked, 
+    checkAndUnlockAchievements, 
+    clearNewUnlocks 
+  } = useRewards();
   const lastSavedSteps = useRef(0);
+  const lastCheckedSteps = useRef(0);
+  const [showUnlockModal, setShowUnlockModal] = React.useState(false);
 
   const [dimensions, setDimensions] = React.useState(
     Dimensions.get('window')
@@ -48,11 +60,35 @@ export default function HomeScreen() {
     }
   }, [steps, isAvailable, saveSteps]);
 
+  useEffect(() => {
+    if (isAvailable && steps > lastCheckedSteps.current && steps > 0) {
+      const goalReached = steps >= dailyGoal;
+      checkAndUnlockAchievements(steps, goalReached, dailyGoal);
+      lastCheckedSteps.current = steps;
+    }
+  }, [steps, isAvailable, dailyGoal, checkAndUnlockAchievements]);
+
+  useEffect(() => {
+    if (newlyUnlocked.length > 0) {
+      setShowUnlockModal(true);
+    }
+  }, [newlyUnlocked]);
+
+  const handleCloseModal = () => {
+    setShowUnlockModal(false);
+    clearNewUnlocks();
+  };
+
   const progress = steps / dailyGoal;
   const calories = Math.round(steps * 0.04);
   const distance = (steps * 0.0008).toFixed(2);
 
   const progressSize = Math.max(1, Math.min(screenWidth * 0.65, 280));
+
+  const recentAchievements = achievements
+    .filter((a) => a.unlocked)
+    .sort((a, b) => (b.unlockedAt || 0) - (a.unlockedAt || 0))
+    .slice(0, 3);
 
   return (
     <View style={[styles.container, { backgroundColor: theme.background }]}>
@@ -150,9 +186,58 @@ export default function HomeScreen() {
                 day
               </Text>
             </View>
+
+            {recentAchievements.length > 0 && (
+              <View style={styles.recentAchievements}>
+                <Text style={[styles.recentTitle, { color: theme.text.primary }]}>
+                  Recent Achievements
+                </Text>
+                {recentAchievements.map((achievement) => (
+                  <View key={achievement.id} style={styles.achievementItem}>
+                    <AchievementBadge achievement={achievement} size="small" />
+                  </View>
+                ))}
+              </View>
+            )}
           </>
         )}
       </ScrollView>
+
+      <Modal
+        visible={showUnlockModal}
+        transparent
+        animationType="fade"
+        onRequestClose={handleCloseModal}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={[styles.modalContent, { backgroundColor: theme.card }]}>
+            <TouchableOpacity 
+              style={styles.closeButton}
+              onPress={handleCloseModal}
+            >
+              <Ionicons name="close" size={24} color={theme.text.secondary} />
+            </TouchableOpacity>
+            
+            <Text style={styles.modalIcon}>🎉</Text>
+            <Text style={[styles.modalTitle, { color: theme.text.primary }]}>
+              Achievement Unlocked!
+            </Text>
+            
+            {newlyUnlocked.map((achievement, index) => (
+              <View key={achievement.id} style={styles.modalAchievement}>
+                <AchievementBadge achievement={achievement} />
+              </View>
+            ))}
+            
+            <TouchableOpacity
+              style={[styles.modalButton, { backgroundColor: theme.primary }]}
+              onPress={handleCloseModal}
+            >
+              <Text style={styles.modalButtonText}>Awesome!</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
     </View>
   );
 }
@@ -259,5 +344,61 @@ const styles = StyleSheet.create({
     fontSize: typography.sizes.sm,
     fontWeight: typography.weights.medium,
     lineHeight: typography.sizes.sm * 1.5,
+  },
+  recentAchievements: {
+    marginTop: spacing.lg,
+  },
+  recentTitle: {
+    fontSize: typography.sizes.lg,
+    fontWeight: typography.weights.bold,
+    marginBottom: spacing.md,
+  },
+  achievementItem: {
+    marginBottom: spacing.sm,
+  },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.7)',
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: spacing.lg,
+  },
+  modalContent: {
+    width: '100%',
+    maxWidth: 400,
+    padding: spacing.xl,
+    borderRadius: borderRadius.xl,
+    alignItems: 'center',
+  },
+  closeButton: {
+    position: 'absolute',
+    top: spacing.md,
+    right: spacing.md,
+    padding: spacing.xs,
+  },
+  modalIcon: {
+    fontSize: 64,
+    marginBottom: spacing.md,
+  },
+  modalTitle: {
+    fontSize: typography.sizes.xl,
+    fontWeight: typography.weights.bold,
+    marginBottom: spacing.lg,
+    textAlign: 'center',
+  },
+  modalAchievement: {
+    width: '100%',
+    marginBottom: spacing.md,
+  },
+  modalButton: {
+    paddingVertical: spacing.md,
+    paddingHorizontal: spacing.xl,
+    borderRadius: borderRadius.lg,
+    marginTop: spacing.md,
+  },
+  modalButtonText: {
+    color: '#FFFFFF',
+    fontSize: typography.sizes.md,
+    fontWeight: typography.weights.bold,
   },
 });
