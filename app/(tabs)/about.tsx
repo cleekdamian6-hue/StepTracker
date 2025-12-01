@@ -37,11 +37,7 @@ export default function AboutScreen() {
     });
   };
 
-  const handleVisitWebsite = () => {
-    Linking.openURL('https://onspace.ai').catch(() => {
-      console.log('Could not open website');
-    });
-  };
+
 
   return (
     <View style={[styles.container, { backgroundColor: theme.background }]}>
@@ -129,16 +125,6 @@ export default function AboutScreen() {
             <Ionicons name="mail" size={24} color={theme.text.primary} />
             <Text style={[styles.actionButtonText, { color: theme.text.primary }]}>
               Contact Support
-            </Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity
-            style={[styles.actionButton, { backgroundColor: theme.card }]}
-            onPress={handleVisitWebsite}
-          >
-            <Ionicons name="globe" size={24} color={theme.text.primary} />
-            <Text style={[styles.actionButtonText, { color: theme.text.primary }]}>
-              Visit Website
             </Text>
           </TouchableOpacity>
         </View>
