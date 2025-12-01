@@ -9,16 +9,16 @@ import {
   Dimensions,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import MapView, { Polyline, Marker, PROVIDER_GOOGLE } from 'react-native-maps';
 import { Ionicons } from '@expo/vector-icons';
 import { useLocationTracking } from '@/hooks/useLocationTracking';
+import { TrackingMap } from '@/components/TrackingMap';
 import { colors, typography, spacing, borderRadius } from '@/constants/theme';
 
 export default function TrackingScreen() {
   const colorScheme = useColorScheme();
   const theme = colors[colorScheme ?? 'light'];
   const insets = useSafeAreaInsets();
-  const mapRef = useRef<MapView>(null);
+  const mapRef = useRef<any>(null);
 
   const {
     isTracking,
@@ -133,44 +133,13 @@ export default function TrackingScreen() {
       </View>
 
       <View style={styles.mapContainer}>
-        <MapView
+        <TrackingMap
           ref={mapRef}
-          provider={PROVIDER_GOOGLE}
-          style={styles.map}
-          initialRegion={
-            currentLocation
-              ? {
-                  latitude: currentLocation.latitude,
-                  longitude: currentLocation.longitude,
-                  latitudeDelta: 0.01,
-                  longitudeDelta: 0.01,
-                }
-              : {
-                  latitude: 37.78825,
-                  longitude: -122.4324,
-                  latitudeDelta: 0.0922,
-                  longitudeDelta: 0.0421,
-                }
-          }
-          showsUserLocation
-          followsUserLocation
-          showsMyLocationButton={false}
-        >
-          {route.length > 0 && (
-            <Polyline
-              coordinates={route}
-              strokeColor={theme.primary}
-              strokeWidth={4}
-            />
-          )}
-          {currentLocation && isTracking && (
-            <Marker coordinate={currentLocation}>
-              <View style={[styles.markerContainer, { backgroundColor: theme.primary }]}>
-                <Ionicons name="location" size={24} color="#FFFFFF" />
-              </View>
-            </Marker>
-          )}
-        </MapView>
+          currentLocation={currentLocation}
+          route={route}
+          isTracking={isTracking}
+          theme={theme}
+        />
       </View>
 
       <View style={[styles.statsPanel, { backgroundColor: theme.card, paddingBottom: insets.bottom + spacing.lg }]}>
@@ -278,21 +247,7 @@ const styles = StyleSheet.create({
   mapContainer: {
     flex: 1,
   },
-  map: {
-    flex: 1,
-  },
-  markerContainer: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    alignItems: 'center',
-    justifyContent: 'center',
-    shadowColor: '#000000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.25,
-    shadowRadius: 4,
-    elevation: 5,
-  },
+
   statsPanel: {
     borderTopLeftRadius: borderRadius.xl,
     borderTopRightRadius: borderRadius.xl,
