@@ -32,7 +32,7 @@ export default function AboutScreen() {
   };
 
   const handleContactSupport = () => {
-    Linking.openURL('mailto:damiancleek@example.com?subject=StepTracker Feedback').catch(() => {
+    Linking.openURL('mailto:cleekdamian6@gmail.com?subject=StepTracker Feedback').catch(() => {
       console.log('Could not open email');
     });
   };
