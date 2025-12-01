@@ -14,29 +14,36 @@ let MapView: any = null;
 let Polyline: any = null;
 let Marker: any = null;
 let PROVIDER_GOOGLE: any = null;
+let mapsAvailable = false;
 
 if (Platform.OS !== 'web') {
-  const Maps = require('react-native-maps');
-  MapView = Maps.default;
-  Polyline = Maps.Polyline;
-  Marker = Maps.Marker;
-  PROVIDER_GOOGLE = Maps.PROVIDER_GOOGLE;
+  try {
+    const Maps = require('react-native-maps');
+    MapView = Maps.default;
+    Polyline = Maps.Polyline;
+    Marker = Maps.Marker;
+    PROVIDER_GOOGLE = Maps.PROVIDER_GOOGLE;
+    mapsAvailable = true;
+  } catch (error) {
+    console.log('Maps module not available:', error);
+    mapsAvailable = false;
+  }
 }
 
 export const TrackingMap = React.forwardRef<any, TrackingMapProps>(
   ({ currentLocation, route, isTracking, theme }, ref) => {
-    if (Platform.OS === 'web') {
+    if (Platform.OS === 'web' || !mapsAvailable || !MapView) {
       return (
         <View style={styles.webContainer}>
           <Text style={styles.webIcon}>🗺️</Text>
           <Text style={[styles.webText, { color: theme.text.secondary }]}>
-            Map view available on mobile only
+            {Platform.OS === 'web' 
+              ? 'Map view available on mobile only'
+              : 'Map functionality requires app rebuild. Tracking data is still being recorded.'}
           </Text>
         </View>
       );
     }
-
-    if (!MapView) return null;
 
     const Ionicons = require('@expo/vector-icons').Ionicons;
 

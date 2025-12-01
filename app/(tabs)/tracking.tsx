@@ -83,24 +83,7 @@ export default function TrackingScreen() {
     return `${mins}:${secs.toString().padStart(2, '0')}`;
   };
 
-  if (Platform.OS === 'web') {
-    return (
-      <View style={[styles.container, { backgroundColor: theme.background }]}>
-        <View style={[styles.header, { paddingTop: insets.top + spacing.lg }]}>
-          <Text style={[styles.title, { color: theme.text.primary }]}>GPS Tracking</Text>
-        </View>
-        <View style={styles.centerContent}>
-          <Text style={styles.webIcon}>🗺️</Text>
-          <Text style={[styles.webText, { color: theme.text.secondary }]}>
-            GPS tracking with maps is not available on web
-          </Text>
-          <Text style={[styles.webHint, { color: theme.text.tertiary }]}>
-            Download the OnSpace mobile app to track your routes in real-time
-          </Text>
-        </View>
-      </View>
-    );
-  }
+
 
   if (error) {
     return (
